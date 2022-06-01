@@ -35,9 +35,10 @@ public class HelloJob {
         StreamExecutionEnvironment env=StreamExecutionEnvironment.getExecutionEnvironment();
         DataStreamSource<String> dataStreamSource = env.addSource(new RichSourceFunction<String>() {
 
-            int i=0;
+
             @Override
             public void run(SourceContext<String> sourceContext) throws Exception {
+                int i=0;
                 Class<?> sourceClass = classLoader.loadClass("com.mc.flink.func.SourceFunction");
                 Object o = sourceClass.getConstructor().newInstance();
                 if (o instanceof BaseFunction){
@@ -52,7 +53,7 @@ public class HelloJob {
 
             @Override
             public void cancel() {
-                i=10;
+
             }
         });
 
