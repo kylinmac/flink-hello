@@ -35,18 +35,23 @@ public class HelloJob {
         StreamExecutionEnvironment env=StreamExecutionEnvironment.getExecutionEnvironment();
         DataStreamSource<String> dataStreamSource = env.addSource(new RichSourceFunction<String>() {
 
-
             @Override
             public void run(SourceContext<String> sourceContext) throws Exception {
                 int i=0;
-                Class<?> sourceClass = classLoader.loadClass("com.mc.flink.func.SourceFunction");
-                Object o = sourceClass.getConstructor().newInstance();
-                if (o instanceof BaseFunction){
-                    System.out.println(" class check success ==============");
-                }
+//                Class<?> sourceClass = classLoader.loadClass("com.mc.flink.func.SourceFunction");
+//                Object o = sourceClass.getConstructor().newInstance();
+//                if (o instanceof BaseFunction){
+//                    System.out.println(" class check success ==============");
+//                }
                 while (i<10){
-                    String apply = (String)sourceClass.getMethod("apply").invoke(o);
-                    sourceContext.collect(apply);
+//                    String apply = (String)sourceClass.getMethod("apply").invoke(o);
+                    BaseFunction baseFunction = new BaseFunction() {
+                        @Override
+                        public String apply() {
+                            return "";
+                        }
+                    };
+                    sourceContext.collect(baseFunction.apply());
                 }
                 sourceContext.close();
             }
@@ -117,7 +122,7 @@ public class HelloJob {
             System.out.println("job thread==============================:"+Thread.currentThread().getContextClassLoader());
             System.out.println("job==============================:"+classLoader);
             //jar路径加入到系统url路径里
-            method.invoke(classLoader, jarUrl);
+//            method.invoke(classLoader, jarUrl);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
