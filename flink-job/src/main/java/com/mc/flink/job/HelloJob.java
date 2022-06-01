@@ -3,6 +3,7 @@ package com.mc.flink.job;
 
 
 import com.mc.flink.api.BaseFunction;
+import com.mc.flink.source.MySource;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
@@ -33,36 +34,8 @@ public class HelloJob {
         loadJar(new URL(args[0]));
         ClassLoader classLoader = HelloJob.class.getClassLoader();
         StreamExecutionEnvironment env=StreamExecutionEnvironment.getExecutionEnvironment();
-        DataStreamSource<String> dataStreamSource = env.addSource(new RichSourceFunction<String>() {
 
-            @Override
-            public void run(SourceContext<String> sourceContext) throws Exception {
-                int i=0;
-//                Class<?> sourceClass = classLoader.loadClass("com.mc.flink.func.SourceFunction");
-//                Object o = sourceClass.getConstructor().newInstance();
-//                if (o instanceof BaseFunction){
-//                    System.out.println(" class check success ==============");
-//                }
-                while (i<10){
-//                    String apply = (String)sourceClass.getMethod("apply").invoke(o);
-                    BaseFunction baseFunction = new BaseFunction() {
-                        @Override
-                        public String apply() {
-                            return "";
-                        }
-                    };
-                    sourceContext.collect(baseFunction.apply());
-                }
-                sourceContext.close();
-            }
-
-            @Override
-            public void cancel() {
-
-            }
-        });
-
-
+        DataStreamSource<String> dataStreamSource = env.addSource(new MySource());
 
 
         Class<?> aClass = classLoader.loadClass("com.mc.flink.func.MyFunc");
@@ -122,7 +95,7 @@ public class HelloJob {
             System.out.println("job thread==============================:"+Thread.currentThread().getContextClassLoader());
             System.out.println("job==============================:"+classLoader);
             //jar路径加入到系统url路径里
-//            method.invoke(classLoader, jarUrl);
+            method.invoke(classLoader, jarUrl);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
