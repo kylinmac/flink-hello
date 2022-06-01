@@ -6,10 +6,10 @@ import org.apache.flink.util.Collector;
 
 import java.io.Serializable;
 
-public class MyFunc extends ProcessFunction<Integer, String> implements Serializable {
+public class MyFunc extends ProcessFunction<String, String> implements Serializable {
 
     @Override
-    public void processElement(Integer integer, ProcessFunction<Integer, String>.Context context, Collector<String> collector) throws Exception {
+    public void processElement(String string, ProcessFunction<String, String>.Context context, Collector<String> collector) throws Exception {
         collector.collect(ObjFactory.getJson().toString());
     }
 

@@ -1,0 +1,5 @@
+# Project exclude paths
+/flink-jar/target/
+/flink-job/target/
+/flink-tool/target/
+/flink-udf/target/
