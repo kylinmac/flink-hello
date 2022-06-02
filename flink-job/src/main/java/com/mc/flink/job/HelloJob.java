@@ -71,7 +71,9 @@ public class HelloJob {
         confData.setAccessible(true);
         Map<String,Object> temp = (Map<String,Object>)confData.get(o);
         List<String> jarList = new ArrayList<>();
-        jarList.add(args[0]);
+        for (String arg : args) {
+            jarList.add(arg);
+        }
         temp.put("pipeline.classpaths",jarList);
     }
 
