@@ -32,7 +32,9 @@ import java.util.Map;
 public class HelloJob {
 
     public static void main(String[] args) throws Exception {
-        loadJar(new URL(args[0]));
+        for (String arg : args) {
+            loadJar(new URL(arg));
+        }
         ClassLoader classLoader = HelloJob.class.getClassLoader();
         StreamExecutionEnvironment env=StreamExecutionEnvironment.getExecutionEnvironment();
 
