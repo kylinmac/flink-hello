@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +48,14 @@ public class HelloJob {
             @Override
             public void flatMap(String s, Collector<String> collector) throws Exception {
                 RuntimeContext runtimeContext = getRuntimeContext();
-                FlinkUserCodeClassLoader userCodeClassLoader = (FlinkUserCodeClassLoader)runtimeContext.getUserCodeClassLoader();
-                System.out.println("task thread==============================:"+Thread.currentThread().getContextClassLoader());
-                System.out.println("task==========================:"+userCodeClassLoader);
-                System.out.println("paths start==========================:");
+                URLClassLoader userCodeClassLoader = (URLClassLoader)runtimeContext.getUserCodeClassLoader();
+                System.out.println(LocalDateTime.now()+" task thread==============================:"+Thread.currentThread().getContextClassLoader());
+                System.out.println(LocalDateTime.now()+" task==========================:"+userCodeClassLoader);
+                System.out.println(LocalDateTime.now()+" paths start==========================:");
                 for (URL url : userCodeClassLoader.getURLs()) {
                     System.out.println(url.getPath());
                 }
-                System.out.println("paths end==========================:");
+                System.out.println(LocalDateTime.now()+" paths end==========================:");
                 collector.collect(s);
                 collector.collect(s+"flat");
             }
@@ -94,8 +95,8 @@ public class HelloJob {
             }
             // 获取系统类加载器
             ClassLoader classLoader = HelloJob.class.getClassLoader();
-            System.out.println("job thread==============================:"+Thread.currentThread().getContextClassLoader());
-            System.out.println("job==============================:"+classLoader);
+            System.out.println(LocalDateTime.now()+" job thread==============================:"+Thread.currentThread().getContextClassLoader());
+            System.out.println(LocalDateTime.now()+" job==============================:"+classLoader);
             //jar路径加入到系统url路径里
             method.invoke(classLoader, jarUrl);
         } catch (Exception e) {
