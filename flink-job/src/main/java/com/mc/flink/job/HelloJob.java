@@ -38,7 +38,7 @@ public class HelloJob {
         ClassLoader classLoader = HelloJob.class.getClassLoader();
         StreamExecutionEnvironment env=StreamExecutionEnvironment.getExecutionEnvironment();
 
-        DataStreamSource<String> dataStreamSource = env.addSource(new MySource());
+        DataStreamSource<String> dataStreamSource = env.addSource(new MySource(Integer.parseInt(args[2])));
 
 
         Class<?> aClass = classLoader.loadClass("com.mc.flink.func.MyFunc");
