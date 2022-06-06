@@ -20,6 +20,7 @@ public class MySource extends RichSourceFunction<String> {
         while (i<10){
             String apply = (String)sourceClass.getMethod("apply").invoke(o);
             sourceContext.collect(apply);
+            i++;
         }
         sourceContext.close();
     }
