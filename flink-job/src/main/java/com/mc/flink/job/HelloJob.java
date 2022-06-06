@@ -32,7 +32,7 @@ import java.util.Map;
 public class HelloJob {
 
     public static void main(String[] args) throws Exception {
-        for (String arg : args) {
+        for (String arg : args[0].split(",")) {
             loadJar(new URL(arg));
         }
         ClassLoader classLoader = HelloJob.class.getClassLoader();
@@ -43,7 +43,7 @@ public class HelloJob {
 
         Class<?> aClass = classLoader.loadClass("com.mc.flink.func.MyFunc");
 
-        setClasspath(args, env);
+        setClasspath(args[1].split(","), env);
 
         ProcessFunction<String, String> instance = (ProcessFunction<String, String>)aClass.getConstructor().newInstance();
         dataStreamSource.process(instance).flatMap(new RichFlatMapFunction<String, String>() {
@@ -103,8 +103,6 @@ public class HelloJob {
             method.invoke(classLoader, jarUrl);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            method.setAccessible(accessible);
         }
     }
 
