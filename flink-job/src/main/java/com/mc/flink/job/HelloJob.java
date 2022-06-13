@@ -44,7 +44,6 @@ public class HelloJob {
         Class<?> aClass = classLoader.loadClass("com.mc.flink.func.MyFunc");
 
         setClasspath(args[1].split(","), env);
-
         ProcessFunction<String, String> instance = (ProcessFunction<String, String>)aClass.getConstructor().newInstance();
         dataStreamSource.process(instance).flatMap(new RichFlatMapFunction<String, String>() {
             @Override

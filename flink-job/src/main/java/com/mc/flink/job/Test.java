@@ -1,9 +1,16 @@
 package com.mc.flink.job;
 
 import java.util.Date;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Test {
     public static void main(String[] args) {
-        System.out.println(new Date(1653054605000L));
+
+        Integer num=null;
+        IntStream.of(1,2,3).forEach(x->{
+            System.out.println(num);
+        });
+
     }
 }
