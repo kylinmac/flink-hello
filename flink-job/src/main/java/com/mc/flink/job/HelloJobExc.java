@@ -51,7 +51,7 @@ public class HelloJobExc {
                 System.out.println(LocalDateTime.now()+" paths end==========================:");
                 collector.collect(s);
                 collector.collect(s+"flat");
-//                runtimeContext.registerUserCodeClassLoaderReleaseHookIfAbsent();
+ //               runtimeContext.registerUserCodeClassLoaderReleaseHookIfAbsent();
             }
         }).print();
 
