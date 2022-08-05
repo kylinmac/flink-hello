@@ -53,7 +53,14 @@ public class TestJdbcSource {
 //                .finish());
         DataStreamSource<JSONObject> input = env.addSource(new JdbcSourceFunction("select id from t_cdc limit 100000", jdbcConfig));
         env.enableCheckpointing(1000);
-        input.assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(1000000))
+        input.map(x->{
+                    StringBuilder sb=new StringBuilder();
+                    for (int i = 0; i < 10000; i++) {
+                        sb.append(i);
+                    }
+                    x.put("message",sb);
+                    return x;
+                }).assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(1000000))
                         .withTimestampAssigner((SerializableTimestampAssigner<JSONObject>) (element, recordTimestamp) -> System.currentTimeMillis()))
                 .windowAll(EventTimeSessionWindows.withGap(Time.seconds(10)))
                 .process(new ProcessAllWindowFunction<JSONObject, JSONObject, TimeWindow>() {
@@ -119,7 +126,7 @@ public class TestJdbcSource {
                     this.total = json.getIntValue("total");
                     this.sql = json.getString("sql");
                     this.retryTimes = json.getIntValue("retryTimes");
-                    this.current = json.getIntValue("current");
+//                    this.current = json.getIntValue("current");
                     this.data = json.getJSONArray("jsonArray");
                     this.jdbcConfig = json.getJSONObject("jdbcConfig");
                 }
@@ -135,7 +142,9 @@ public class TestJdbcSource {
             }
             System.out.println("===============start source current:"+current);
             while (current < total && flag) {
-                Thread.sleep(1);
+                if (current==50000){
+                    int i=1/0;
+                }
                 ctx.collectWithTimestamp((JSONObject) data.get(current++), System.currentTimeMillis());
             }
         }
