@@ -65,6 +65,9 @@ public class TestJdbcSource {
                         }
                         int all=0;
                         for (JSONObject s : iterable) {
+                            if (all==50000){
+                                int i=1/0;
+                            }
                             all++;
                         }
                         JSONObject jsonObject = new JSONObject();
@@ -136,9 +139,7 @@ public class TestJdbcSource {
             }
             System.out.println("===============start source current:"+current);
             while (current < total && flag) {
-                if (current==50000){
-                    int i=1/0;
-                }
+
                 ctx.collectWithTimestamp((JSONObject) data.get(current++), System.currentTimeMillis());
             }
         }
