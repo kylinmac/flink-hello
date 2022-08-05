@@ -55,7 +55,7 @@ public class TestJdbcSource {
         env.enableCheckpointing(1000);
         input.map(x->{
                     StringBuilder sb=new StringBuilder();
-                    for (int i = 0; i < 100; i++) {
+                    for (int i = 0; i < 1000; i++) {
                         sb.append(i);
                     }
                     x.put("message",sb);
@@ -138,6 +138,7 @@ public class TestJdbcSource {
         @Override
         public void run(SourceContext<JSONObject> ctx) throws Exception {
             if (data == null) {
+                System.out.println("===============excute :"+current);
                 data = executeQuery(jdbcConfig, sql);
                 total = data.size();
             }
