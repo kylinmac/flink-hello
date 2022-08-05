@@ -53,14 +53,7 @@ public class TestJdbcSource {
 //                .finish());
         DataStreamSource<JSONObject> input = env.addSource(new JdbcSourceFunction("select id from t_cdc limit 100000", jdbcConfig));
         env.enableCheckpointing(1000);
-        input.map(x->{
-                    StringBuilder sb=new StringBuilder();
-                    for (int i = 0; i < 1000; i++) {
-                        sb.append(i);
-                    }
-                    x.put("message",sb);
-                    return x;
-                }).assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(1000000))
+        input.assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(1000000))
                         .withTimestampAssigner((SerializableTimestampAssigner<JSONObject>) (element, recordTimestamp) -> System.currentTimeMillis()))
                 .windowAll(EventTimeSessionWindows.withGap(Time.seconds(10)))
                 .process(new ProcessAllWindowFunction<JSONObject, JSONObject, TimeWindow>() {
@@ -126,7 +119,7 @@ public class TestJdbcSource {
                     this.total = json.getIntValue("total");
                     this.sql = json.getString("sql");
                     this.retryTimes = json.getIntValue("retryTimes");
-//                    this.current = json.getIntValue("current");
+                    this.current = json.getIntValue("current");
                     this.data = json.getJSONArray("jsonArray");
                     this.jdbcConfig = json.getJSONObject("jdbcConfig");
                 }
