@@ -23,7 +23,7 @@ import java.time.Duration;
  * @date 2022/7/28 15:49
  */
 public class TestJdbcSource {
-    public static void main(String[] args) {
+    public static void main(String[] args)  throws Exception {
 
         YmlUtil.init("~/application.yml");
 
@@ -53,10 +53,14 @@ public class TestJdbcSource {
                         if (iterable == null) {
                             return;
                         }
+			 Thread.sleep(500);
                         for (String s : iterable) {
+				System.out.println(s);
                             collector.collect(s);
                         }
                     }
                 }).print();
+    
+    env.execute();
     }
 }
