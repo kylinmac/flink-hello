@@ -65,7 +65,6 @@ public class TestJdbcSource {
                         }
                         int all=0;
                         for (JSONObject s : iterable) {
-                            System.out.println(s);
                             all++;
                         }
                         JSONObject jsonObject = new JSONObject();
