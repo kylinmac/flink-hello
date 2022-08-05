@@ -130,7 +130,7 @@ public class TestJdbcSource {
         @Override
         public void run(SourceContext<JSONObject> ctx) throws Exception {
             if (data == null) {
-                data = executeQuery(jdbcConfig, sql, getRuntimeContext());
+                data = executeQuery(jdbcConfig, sql);
                 total = data.size();
             }
             System.out.println("===============start source current:"+current);
