@@ -55,7 +55,7 @@ public class TestJdbcSource {
         env.enableCheckpointing(1000);
         input.map(x->{
                     StringBuilder sb=new StringBuilder();
-                    for (int i = 0; i < 10000; i++) {
+                    for (int i = 0; i < 100; i++) {
                         sb.append(i);
                     }
                     x.put("message",sb);
