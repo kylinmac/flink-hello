@@ -105,6 +105,7 @@ public class TestJdbcSource {
             state.put("retryTimes", retryTimes + 1);
             state.put("jdbcConfig", jdbcConfig);
             this.checkpointState.add(state);
+            System.out.println("===============save source current:"+current);
         }
 
         @Override
@@ -123,6 +124,7 @@ public class TestJdbcSource {
                     this.jdbcConfig = json.getJSONObject("jdbcConfig");
                 }
             }
+            System.out.println("===============init source current:"+current);
         }
 
         @Override
@@ -131,6 +133,7 @@ public class TestJdbcSource {
                 data = executeQuery(jdbcConfig, sql, getRuntimeContext());
                 total = data.size();
             }
+            System.out.println("===============start source current:"+current);
             while (current < total && flag) {
                 Thread.sleep(1);
                 ctx.collectWithTimestamp((JSONObject) data.get(current++), System.currentTimeMillis());
