@@ -132,6 +132,7 @@ public class TestJdbcSource {
                 }
             }
             System.out.println("===============init source current:"+current);
+            System.out.println("===============init source retryTimes:"+retryTimes);
         }
 
         @Override
