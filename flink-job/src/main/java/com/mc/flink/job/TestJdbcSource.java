@@ -65,15 +65,13 @@ public class TestJdbcSource {
                         }
                         int all=0;
                         for (JSONObject s : iterable) {
-                            if (all==50000){
-                                int i=1/0;
-                            }
                             all++;
                         }
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("total",all);
                         collector.collect(jsonObject );
                         System.out.println("=================================total: "+all);
+                        int i=1/0;
                     }
                 }).print();
 
