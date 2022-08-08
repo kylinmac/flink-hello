@@ -65,6 +65,7 @@ public class TestJdbcSource {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("total", all);
                         collector.collect(jsonObject);
+                        int i=1/0;
                         System.out.println("=================================restart from save total: " + all);
                     }
                 }).print();
@@ -135,7 +136,8 @@ public class TestJdbcSource {
             System.out.println("===============start source current:" + current);
             watermark = watermark==0?System.currentTimeMillis():watermark;
             while (current < total && flag) {
-                ctx.collectWithTimestamp((JSONObject) data.get(current++), watermark);
+                ctx.collect((JSONObject) data.get(current));
+                current++;
             }
         }
 
