@@ -66,7 +66,6 @@ public class TestJdbcSource {
                         jsonObject.put("total", all);
                         collector.collect(jsonObject);
                         System.out.println("=================================restart from save total: " + all);
-                        int i = 1 / 0;
                     }
                 }).print();
 
