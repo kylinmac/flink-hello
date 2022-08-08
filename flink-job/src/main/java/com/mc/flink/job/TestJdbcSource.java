@@ -70,8 +70,7 @@ public class TestJdbcSource {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("total",all);
                         collector.collect(jsonObject );
-                        System.out.println("=================================total: "+all);
-                        int i=1/0;
+                        System.out.println("=================================restart from save total: "+all);
                     }
                 }).print();
 
