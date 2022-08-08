@@ -7,9 +7,6 @@ import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
-import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
-import org.apache.flink.api.java.typeutils.RowTypeInfo;
-import org.apache.flink.connector.jdbc.JdbcInputFormat;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
@@ -18,10 +15,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.streaming.api.functions.windowing.ProcessAllWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import java.sql.*;
@@ -63,14 +58,15 @@ public class TestJdbcSource {
                         if (iterable == null) {
                             return;
                         }
-                        int all=0;
+                        int all = 0;
                         for (JSONObject s : iterable) {
                             all++;
                         }
                         JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("total",all);
-                        collector.collect(jsonObject );
-                        System.out.println("=================================restart from save total: "+all);
+                        jsonObject.put("total", all);
+                        collector.collect(jsonObject);
+                        System.out.println("=================================restart from save total: " + all);
+                        int i = 1 / 0;
                     }
                 }).print();
 
@@ -86,6 +82,7 @@ public class TestJdbcSource {
 
         private int current = 0;
         private int retryTimes = 0;
+        private long watermark = 0;
         ListState<JSONObject> checkpointState;
 
         public JdbcSourceFunction(String sql, JSONObject jdbcConfig) {
@@ -103,8 +100,9 @@ public class TestJdbcSource {
             state.put("jsonArray", data);
             state.put("retryTimes", retryTimes + 1);
             state.put("jdbcConfig", jdbcConfig);
+            state.put("watermark", watermark);
             this.checkpointState.add(state);
-            System.out.println("===============save source current:"+current);
+            System.out.println("===============save source current:" + current);
         }
 
         @Override
@@ -121,23 +119,24 @@ public class TestJdbcSource {
                     this.current = json.getIntValue("current");
                     this.data = json.getJSONArray("jsonArray");
                     this.jdbcConfig = json.getJSONObject("jdbcConfig");
+                    this.watermark = json.getLongValue("watermark");
                 }
             }
-            System.out.println("===============init source current:"+current);
-            System.out.println("===============init source retryTimes:"+retryTimes);
+            System.out.println("===============init source current:" + current);
+            System.out.println("===============init source retryTimes:" + retryTimes);
         }
 
         @Override
         public void run(SourceContext<JSONObject> ctx) throws Exception {
             if (data == null) {
-                System.out.println("===============excute :"+current);
+                System.out.println("===============excute :" + current);
                 data = executeQuery(jdbcConfig, sql);
                 total = data.size();
             }
-            System.out.println("===============start source current:"+current);
+            System.out.println("===============start source current:" + current);
+            watermark = watermark==0?System.currentTimeMillis():watermark;
             while (current < total && flag) {
-
-                ctx.collectWithTimestamp((JSONObject) data.get(current++), System.currentTimeMillis());
+                ctx.collectWithTimestamp((JSONObject) data.get(current++), watermark);
             }
         }
 
