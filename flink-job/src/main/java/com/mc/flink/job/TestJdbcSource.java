@@ -18,6 +18,11 @@ import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindow
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
+import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
+import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.connector.jdbc.JdbcInputFormat;
+import org.apache.flink.types.Row;
+import org.apache.flink.streaming.api.CheckpointingMode;
 
 import java.sql.*;
 import java.time.Duration;
@@ -34,22 +39,24 @@ public class TestJdbcSource {
         JSONObject jdbcConfig = JSONObject.parseObject(YmlUtil.get("mysql"));
         jdbcConfig.put("cols", "id");
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-//        BasicTypeInfo[] basicTypeInfos = new BasicTypeInfo[1];
-//        basicTypeInfos[0] = BasicTypeInfo.LONG_TYPE_INFO;
-//        RowTypeInfo rowTypeInfo = new RowTypeInfo(basicTypeInfos);
-//
-//        DataStreamSource<Row> input = env.createInput(JdbcInputFormat.buildJdbcInputFormat()
-//                .setDBUrl(jdbcConfig.getString("url"))
-//                .setDrivername(jdbcConfig.getString("driver"))
-//                .setUsername(jdbcConfig.getString("username"))
-//                .setPassword(jdbcConfig.getString("password"))
-//                .setQuery("select id from t_cdc order by id")
-//                .setRowTypeInfo(rowTypeInfo)
-//                .finish());
+        BasicTypeInfo[] basicTypeInfos = new BasicTypeInfo[1];
+        basicTypeInfos[0] = BasicTypeInfo.LONG_TYPE_INFO;
+        RowTypeInfo rowTypeInfo = new RowTypeInfo(basicTypeInfos);
+
+        DataStreamSource<Row> input2 = env.createInput(JdbcInputFormat.buildJdbcInputFormat()
+                .setDBUrl(jdbcConfig.getString("url"))
+                .setDrivername(jdbcConfig.getString("driver"))
+                .setUsername(jdbcConfig.getString("username"))
+                .setPassword(jdbcConfig.getString("password"))
+                .setQuery("select id from t_cdc limit 100000")
+                .setRowTypeInfo(rowTypeInfo)
+                .finish());
         DataStreamSource<JSONObject> input = env.addSource(new JdbcSourceFunction("select id from t_cdc limit 100000", jdbcConfig));
-        env.enableCheckpointing(1000);
-        input.assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(1000000))
-                        .withTimestampAssigner((SerializableTimestampAssigner<JSONObject>) (element, recordTimestamp) -> System.currentTimeMillis()))
+        env.enableCheckpointing(1000, CheckpointingMode.EXACTLY_ONCE);
+        input
+		//.map(x->{ JSONObject json=new JSONObject(); json.put("data",x);return json;})
+		.assignTimestampsAndWatermarks(WatermarkStrategy.<JSONObject>forBoundedOutOfOrderness(Duration.ofSeconds(1000000)))
+                       // .withTimestampAssigner((SerializableTimestampAssigner<JSONObject>) (element, recordTimestamp) -> System.currentTimeMillis()))
                 .windowAll(EventTimeSessionWindows.withGap(Time.seconds(10)))
                 .process(new ProcessAllWindowFunction<JSONObject, JSONObject, TimeWindow>() {
 
@@ -65,9 +72,10 @@ public class TestJdbcSource {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("total", all);
                         collector.collect(jsonObject);
-                        int i=1/0;
+                       
                         System.out.println("=================================restart from save total: " + all);
-                    }
+                    	int i=1/0;
+		    }
                 }).print();
 
         env.execute();
@@ -98,7 +106,7 @@ public class TestJdbcSource {
             state.put("total", total);
             state.put("current", current);
             state.put("jsonArray", data);
-            state.put("retryTimes", retryTimes + 1);
+            state.put("retryTimes", retryTimes );
             state.put("jdbcConfig", jdbcConfig);
             state.put("watermark", watermark);
             this.checkpointState.add(state);
@@ -115,13 +123,14 @@ public class TestJdbcSource {
                 for (JSONObject json : this.checkpointState.get()) {
                     this.total = json.getIntValue("total");
                     this.sql = json.getString("sql");
-                    this.retryTimes = json.getIntValue("retryTimes");
+                    this.retryTimes = json.getIntValue("retryTimes")+1;
                     this.current = json.getIntValue("current");
                     this.data = json.getJSONArray("jsonArray");
                     this.jdbcConfig = json.getJSONObject("jdbcConfig");
                     this.watermark = json.getLongValue("watermark");
                 }
-            }
+ //           	Thread.sleep((long)jdbcConfig.getOrDefault("restoreTime",30000L));
+	    }
             System.out.println("===============init source current:" + current);
             System.out.println("===============init source retryTimes:" + retryTimes);
         }
@@ -136,7 +145,7 @@ public class TestJdbcSource {
             System.out.println("===============start source current:" + current);
             watermark = watermark==0?System.currentTimeMillis():watermark;
             while (current < total && flag) {
-                ctx.collect((JSONObject) data.get(current));
+                ctx.collectWithTimestamp((JSONObject) data.get(current),watermark);
                 current++;
             }
         }
